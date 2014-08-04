@@ -5,7 +5,7 @@ Promise.promisifyAll(SerialPort.prototype)
 assert = require 'assert'
 events = require 'events'
 
-class Board
+class Board extends events.EventEmitter
 
   _awaitingAck: []
 
@@ -83,7 +83,7 @@ class Board
     assert typeof pin is "number"
     assert pin in [0, 1]
     return @serialPort
-      .writeAsync("RF receive\n")
+      .writeAsync("RF receive #{pin}\n")
       .then(@_waitForAcknowledge)
 
   rfControlSend: (pin, pulseLengths, pulses) ->
@@ -130,7 +130,9 @@ class Board
   _handleRFControl: (cmd, args) ->
     assert args.length is 10
     assert args[0] is 'receive'
-    pulseLengths = args[1..8].map( (v) -> parseInt(v, 10) )
+    pulseLengths = args[1..8]
+      .map( (v) -> parseInt(v, 10) )
+      .filter( (v) -> (v isnt 0) )
     pulses = args[9]
     @emit 'rfReceive', {pulseLengths, pulses}
     return
