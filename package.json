@@ -1,0 +1,29 @@
+{
+  "name": "homeduino",
+  "version": "0.0.0",
+  "description": "Node.js library for interfacing with the homeduino ardunio library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sweetpi/homeduino.git"
+  },
+  "author": "Oliver Schneider <oliverschneider89+sweetpi@gmail.com>",
+  "license": "GPLv3",
+  "bugs": {
+    "url": "https://github.com/sweetpi/homeduino/issues"
+  },
+  "dependencies": {
+    "serialport": "~1.4.5",
+    "bluebird": "~2.2.2"
+  },
+  "devDependencies": {
+    "gulp": "~3.8.6",
+    "gulp-coffee": "~2.1.1",
+    "coffee-script-redux": "~2.0.0-beta8",
+    "gulp-plumber": "~0.6.4",
+    "gulp-watch": "~0.6.9"
+  }
+}
