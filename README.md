@@ -28,17 +28,6 @@ board.readDHT(22, 13).then( (ret) ->
 ).done()
 ```
 
-### readDHT(type, pin)
-
-Read a dht sensor
-
-```CoffeeScript
-board.readDHT(22, 13).then( (ret) -> 
-  console.log ret.temperature, ret.humidity
-).done()
-```
-
-
 ### rfControlStartReceiving(pin)
 
 ```CoffeeScript
