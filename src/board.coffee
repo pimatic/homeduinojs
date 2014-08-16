@@ -12,7 +12,7 @@ class Board extends events.EventEmitter
   constructor: (port, baudrate = 9600) ->
     @serialPort = new SerialPort(port, { 
       baudrate, 
-      parser: serialport.parsers.readline("\n")
+      parser: serialport.parsers.readline("\r\n")
     }, openImmediately = no)
     @serialPort.on("data", (line) =>
       console.log "data:", JSON.stringify(line)
