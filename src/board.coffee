@@ -4,6 +4,7 @@ Promise = require 'bluebird'
 Promise.promisifyAll(SerialPort.prototype)
 assert = require 'assert'
 events = require 'events'
+rfcontrol = require 'rfcontroljs'
 
 class Board extends events.EventEmitter
 
@@ -15,7 +16,8 @@ class Board extends events.EventEmitter
       parser: serialport.parsers.readline("\r\n")
     }, openImmediately = no)
     @serialPort.on("data", (line) =>
-      console.log "data:", JSON.stringify(line)
+      #console.log "data:", JSON.stringify(line)
+      @emit "data", line
       if line is "ready" then return
       args = line.split(" ")
       assert args.length >= 1
@@ -130,11 +132,16 @@ class Board extends events.EventEmitter
   _handleRFControl: (cmd, args) ->
     assert args.length is 10
     assert args[0] is 'receive'
-    pulseLengths = args[1..8]
-      .map( (v) -> parseInt(v, 10) )
-      .filter( (v) -> (v isnt 0) )
-    pulses = args[9]
-    @emit 'rfReceive', {pulseLengths, pulses}
+
+    strSeq = args[1]
+    for a in args[2..9]
+      strSeq += " #{a}"
+
+    info = rfcontrol.prepareCompressedPulses(strSeq)
+    @emit 'rfReceive', info
+    results = rfcontrol.parsePulseSquence(info.pulseLengths, info.pulses)
+    for r in results
+      @emit 'rf', r
     return
 
   _handleKeypad: (cmd, args) ->

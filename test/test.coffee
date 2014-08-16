@@ -6,12 +6,17 @@ board.on "keypad", (event) -> console.log event
 board.on "rfReceive", (event) -> console.log event
 
 board.connect().then( ->
+  time = (new Date()).getTime()
   board.digitalWrite(4, 1)
-    .then( -> console.log "digitalWrite done" )
+    .then( -> 
+      timeDelta = (new Date().getTime() - time);
+      console.log "digitalWrite done, took #{timeDelta}ms" )
     .done()
-  board.readDHT(22, 13)
-    .then( (ret) -> console.log ret )
-    .done()
-  board.rfControlStartReceiving(0)
-    .done()
+  setInterval( (->
+    time = (new Date()).getTime()
+    board.readDHT(22, 13).then( (ret) -> 
+      timeDelta = (new Date().getTime() - time);
+      console.log ret, "took: #{timeDelta}ms").done()
+  ), 2000)
+
 ).done()
