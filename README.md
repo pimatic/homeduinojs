@@ -10,7 +10,8 @@ API
 
 ```CoffeeScript
 
-Board = require('../index').Board
+homeduino = require('homeduino')
+Board = homeduino.Board
 board = new Board('/dev/ttyUSB0', 9600)
 
 board.connect().then( ->
