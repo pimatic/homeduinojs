@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/sweetpi/homeduino.git"
+    "url": "git://github.com/pimatic/homeduinojs.git"
   },
   "author": "Oliver Schneider <oliverschneider89+sweetpi@gmail.com>",
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/sweetpi/homeduino/issues"
+    "url": "https://github.com/pimatic/homeduinojs/issues"
   },
   "dependencies": {
     "serialport": "~1.4.5",
