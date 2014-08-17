@@ -30,7 +30,7 @@ class Board extends events.EventEmitter
         when 'ACK', 'ERR' then @_handleAcknowledge(cmd, args)
         when 'RF' then @_handleRFControl(cmd, args)
         when 'KP' then @_handleKeypad(cmd, args)
-        else console.log "unknown message received: #{data}"
+        else console.log "unknown message received: #{line}"
     )
 
   connect: () -> 

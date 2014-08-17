@@ -12,7 +12,7 @@ API
 
 homeduino = require('homeduino')
 Board = homeduino.Board
-board = new Board('/dev/ttyUSB0', 9600)
+board = new Board('/dev/ttyUSB0', 115200)
 
 board.connect().then( ->
   #do stuff
