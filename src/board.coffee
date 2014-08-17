@@ -18,7 +18,9 @@ class Board extends events.EventEmitter
     @serialPort.on("data", (line) =>
       #console.log "data:", JSON.stringify(line)
       @emit "data", line
-      if line is "ready" then return
+      if line is "ready"
+        @emit 'ready'
+        return
       args = line.split(" ")
       assert args.length >= 1
       cmd = args[0]
@@ -32,13 +34,17 @@ class Board extends events.EventEmitter
     )
 
   connect: () -> 
-    @serialPort.openAsync().then( =>
+    return @pendingConnect = @serialPort.openAsync().then( =>
       return new Promise( (resolve, reject) =>
         @serialPort.once("data", (line) =>
           resolve()
         )
       ).timeout(3000)
     )
+
+  whenReady: -> 
+    unless @pendingConnect? then return Promise.reject(new Error("First call connect!"))
+    return @pendingConnect
 
   digitalWrite: (pin, value) ->
     assert typeof pin is "number"
