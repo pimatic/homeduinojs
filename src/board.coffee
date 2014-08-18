@@ -33,13 +33,16 @@ class Board extends events.EventEmitter
         else console.log "unknown message received: #{line}"
     )
 
-  connect: () -> 
+  connect: (timeout = 20000) -> 
     return @pendingConnect = @serialPort.openAsync().then( =>
+      resolver = null
       return new Promise( (resolve, reject) =>
-        @once("ready", (line) =>
-          resolve()
-        )
-      ).timeout(3000)
+        resolver = resolve
+        @once("ready", resolve)
+      ).timeout(timeout).catch( (err) =>
+        @removeListener("ready", resolver)
+        throw err
+      )
     )
 
   whenReady: -> 
