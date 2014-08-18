@@ -36,7 +36,7 @@ class Board extends events.EventEmitter
   connect: () -> 
     return @pendingConnect = @serialPort.openAsync().then( =>
       return new Promise( (resolve, reject) =>
-        @serialPort.once("data", (line) =>
+        @once("ready", (line) =>
           resolve()
         )
       ).timeout(3000)
