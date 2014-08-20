@@ -15,7 +15,9 @@ class Board extends events.EventEmitter
       baudrate, 
       parser: serialport.parsers.readline("\r\n")
     }, openImmediately = no)
-    @serialPort.on("data", (line) =>
+    @serialPort.on("data", (_line) =>
+      # Sanitize data
+      line = _line.replace(/\0/g, '').trim()
       #console.log "data:", JSON.stringify(line)
       @emit "data", line
       if line is "ready"
