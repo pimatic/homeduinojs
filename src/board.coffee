@@ -90,7 +90,10 @@ class Board extends events.EventEmitter
     return @serialPort
       .writeAsync("DHT #{type} #{pin}\n")
       .then(@_waitForAcknowledge)
-      .then( (args) -> {temperature: args[0], humidity: args[1]} )
+      .then( (args) -> {
+        temperature: parseFloat(args[0]), 
+        humidity: parseFloat(args[1])
+      })
 
   rfControlStartReceiving: (pin) ->
     assert typeof pin is "number"
