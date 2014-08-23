@@ -10,7 +10,10 @@ board.on "rf", (event) ->
 
 board.connect().then( ->
   console.log "board ready"
-  board.rfControlStartReceiving(0).then( ->
+  return board.rfControlStartReceiving(0).then( ->
     console.log "receiving..."
-  ).done()
+  )
+  #.then( ->
+  #  board.rfControlSendMessage(4, 'switch1', {id: 9390234, all: false, unit: 0, state: true})
+  #)
 ).done()

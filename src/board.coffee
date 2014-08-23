@@ -102,11 +102,16 @@ class Board extends events.EventEmitter
       .writeAsync("RF receive #{pin}\n")
       .then(@_waitForAcknowledge)
 
-  rfControlSend: (pin, pulseLengths, pulses) ->
-    assert typeof pin is "numer"
-    assert Array.isArray(pulseLengths)
-    assert pulseLengths.length <= 8
-    assert typeof pulses is "string"
+  rfControlSendMessage: (pin, protocolName, message) ->
+    result = rfcontrol.encodeMessage(protocolName, message)
+    return @rfControlSendPulses(pin, result.pulseLengths, result.pulses)
+
+  rfControlSendPulses: (pin, pulseLengths, pulses) ->
+    assert typeof pin is "number", "pin should be a number"
+    assert Array.isArray(pulseLengths), "pulseLengths should be an array"
+    assert pulseLengths.length <= 8, "pulseLengths.length should be <= 8"
+    assert typeof pulses is "string", "pulses should be a string"
+    repeats = 5
     pulseLengthsArgs = ""
     i = 0
     for pl in pulseLengths
@@ -116,7 +121,7 @@ class Board extends events.EventEmitter
       pulseLengthsArgs += " 0"
       i++
     return @serialPort
-      .writeAsync("RF send #{pin} #{pulseLengthsArgs} #{pulses}\n")
+      .writeAsync("RF send #{pin} #{repeats} #{pulseLengthsArgs} #{pulses}\n")
       .then(@_waitForAcknowledge)
 
   _onAcknowledge: () =>
@@ -153,7 +158,7 @@ class Board extends events.EventEmitter
 
     info = rfcontrol.prepareCompressedPulses(strSeq)
     @emit 'rfReceive', info
-    results = rfcontrol.parsePulseSquence(info.pulseLengths, info.pulses)
+    results = rfcontrol.decodePulses(info.pulseLengths, info.pulses)
     for r in results
       @emit 'rf', r
     return
