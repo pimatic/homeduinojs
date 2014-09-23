@@ -169,4 +169,7 @@ class Board extends events.EventEmitter
     @emit 'keypad', {key}
     return
 
+  @getRfProtocol: (protocolName) ->
+    return rfcontrol.getProtocol(protocolName)
+
 module.exports = Board
