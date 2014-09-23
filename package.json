@@ -28,7 +28,7 @@
   "dependencies": {
     "serialport": "~1.4.5",
     "bluebird": "~2.2.2",
-    "rfcontroljs": "0.0.4"
+    "rfcontroljs": "0.0.5"
   },
   "devDependencies": {
     "gulp": "~3.8.6",
