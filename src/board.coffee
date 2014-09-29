@@ -15,37 +15,46 @@ class Board extends events.EventEmitter
       baudrate, 
       parser: serialport.parsers.readline("\r\n")
     }, openImmediately = no)
-    @serialPort.on("data", (_line) =>
-      # Sanitize data
-      line = _line.replace(/\0/g, '').trim()
-      #console.log "data:", JSON.stringify(line)
-      @emit "data", line
-      if line is "ready"
-        @emit 'ready'
-        return
-      args = line.split(" ")
-      assert args.length >= 1
-      cmd = args[0]
-      args.splice(0, 1)
-      #console.log cmd, args
-      switch cmd
-        when 'ACK', 'ERR' then @_handleAcknowledge(cmd, args)
-        when 'RF' then @_handleRFControl(cmd, args)
-        when 'KP' then @_handleKeypad(cmd, args)
-        else console.log "unknown message received: #{line}"
-    )
+    
 
   connect: (timeout = 20000) -> 
-    return @pendingConnect = @serialPort.openAsync().then( =>
-      resolver = null
-      return new Promise( (resolve, reject) =>
-        resolver = resolve
-        @once("ready", resolve)
-      ).timeout(timeout).catch( (err) =>
-        @removeListener("ready", resolver)
-        throw err
+    return @pendingConnect = @derialPort.flushAsync( => 
+      @serialPort.openAsync().then( =>
+        # setup data listner
+        @serialPort.on("data", @_onData)
+        resolver = null
+        return new Promise( (resolve, reject) =>
+          resolver = resolve
+          @once("ready", resolver)
+        ).timeout(timeout).catch( (err) =>
+          @removeListener("ready", resolver)
+          @removeListener("data", @_onData)
+          throw err
+        )
       )
     )
+
+  _onData: (_line) => 
+    #console.log "data:", JSON.stringify(line)
+    # Sanitize data
+    line = _line.replace(/\0/g, '').trim()
+    @onData(_line)
+
+    @emit "data", line
+    if line is "ready"
+      @emit 'ready'
+      return
+    args = line.split(" ")
+    assert args.length >= 1
+    cmd = args[0]
+    args.splice(0, 1)
+    #console.log cmd, args
+    switch cmd
+      when 'ACK', 'ERR' then @_handleAcknowledge(cmd, args)
+      when 'RF' then @_handleRFControl(cmd, args)
+      when 'KP' then @_handleKeypad(cmd, args)
+      else console.log "unknown message received: #{line}"
+      
 
   whenReady: -> 
     unless @pendingConnect? then return Promise.reject(new Error("First call connect!"))
