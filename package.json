@@ -26,14 +26,16 @@
     "url": "https://github.com/pimatic/homeduinojs/issues"
   },
   "dependencies": {
-    "serialport": "~1.4.5",
     "bluebird": "~2.2.2",
-    "rfcontroljs": "0.0.9"
+    "otaat-repl": "^1.0.1",
+    "rfcontroljs": "0.0.9",
+    "serialport": "~1.4.5"
   },
   "devDependencies": {
+    "coffee-script-redux": "~2.0.0-beta8",
+    "colors": "^0.6.2",
     "gulp": "~3.8.6",
     "gulp-coffee": "~2.1.1",
-    "coffee-script-redux": "~2.0.0-beta8",
     "gulp-plumber": "~0.6.4",
     "gulp-watch": "~0.6.9"
   }

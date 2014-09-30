@@ -60,3 +60,27 @@ board.analogRead(4).then( (value) ->
 ).done()
 board.pinMode(1, 0).done()
 ```
+
+REPL-Client
+-----------
+
+```
+git clone https://github.com/pimatic/homeduinojs && cd homeduino && npm install
+```
+
+Start the repl client:
+
+```
+sudo ./client.js /dev/ttyUSB0 115200
+```
+
+It will connect to the arduino and give you a prompt, where you can enter a javascript command:
+
+```
+connecting to /dev/ttyUSB0 with 115200
+data: "ready"
+connected
+homeduino> board.rfControlStartReceiving(0)
+data: "ACK"
+undefined
+```
