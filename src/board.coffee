@@ -9,6 +9,7 @@ rfcontrol = require 'rfcontroljs'
 class Board extends events.EventEmitter
 
   _awaitingAck: []
+  ready: no
 
   constructor: (port, baudrate = 9600) ->
     @serialPort = new SerialPort(port, { 
@@ -20,7 +21,6 @@ class Board extends events.EventEmitter
   connect: (timeout = 20000) -> 
     return @pendingConnect = 
       @serialPort.openAsync()
-      .then( => @serialPort.flushAsync() )
       .then( =>
         # setup data listner
         @serialPort.on("data", @_onData)
@@ -40,9 +40,11 @@ class Board extends events.EventEmitter
     # Sanitize data
     line = _line.replace(/\0/g, '').trim()
     @emit "data", line
-    if line is "ready"
+    if /ready$/.test(line)
+      @ready = yes
       @emit 'ready'
       return
+    unless @ready then return
     args = line.split(" ")
     assert args.length >= 1
     cmd = args[0]
