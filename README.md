@@ -65,7 +65,7 @@ REPL-Client
 -----------
 
 ```
-git clone https://github.com/pimatic/homeduinojs && cd homeduino && npm install
+git clone https://github.com/pimatic/homeduinojs && cd homeduinojs && npm install
 ```
 
 Start the repl client:
