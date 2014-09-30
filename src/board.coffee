@@ -18,8 +18,10 @@ class Board extends events.EventEmitter
     
 
   connect: (timeout = 20000) -> 
-    return @pendingConnect = @derialPort.flushAsync( => 
-      @serialPort.openAsync().then( =>
+    return @pendingConnect = 
+      @serialPort.openAsync()
+      .then( => @serialPort.flushAsync() )
+      .then( =>
         # setup data listner
         @serialPort.on("data", @_onData)
         resolver = null
@@ -32,14 +34,11 @@ class Board extends events.EventEmitter
           throw err
         )
       )
-    )
 
   _onData: (_line) => 
     #console.log "data:", JSON.stringify(line)
     # Sanitize data
     line = _line.replace(/\0/g, '').trim()
-    @onData(_line)
-
     @emit "data", line
     if line is "ready"
       @emit 'ready'
