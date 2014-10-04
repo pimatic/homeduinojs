@@ -12,27 +12,29 @@ class Board extends events.EventEmitter
   ready: no
 
   constructor: (@port, @baudrate = 9600) ->
-    #nop
+    @on('ready', => @setupWatchdog() )
 
   connect: (timeout = 20000, retries = 3) -> 
+    @stopWatchdog()
     return @pendingConnect = ( 
       if @serialPort? then @serialPort.closeAsync() 
       else Promise.resolve() 
     # ignore if we can't close
     ).finally( =>
-
       @ready = no
       @serialPort = new SerialPort(@port, { 
         @baudrate, 
         parser: serialport.parsers.readline("\r\n")
       }, openImmediately = no)
-
+      @serialPort.on('error', (error) => @emit('error', error) )
       return @serialPort.openAsync()
         .then( =>
           # setup data listner
           @serialPort.on("data", @_onData)
           resolver = null
           return new Promise( (resolve, reject) =>
+            # write ping to force reset (see onData) if device was not reseted probably
+            @serialPort.writeAsync("PING\n").catch(reject)
             resolver = resolve
             @once("ready", resolver)
           ).timeout(timeout).catch( (err) =>
@@ -40,6 +42,7 @@ class Board extends events.EventEmitter
             @removeListener("data", @_onData)
             if err.name is "TimeoutError" and retries > 0
               @emit 'reconnect', err
+              
               return @connect(timeout, retries-1)
             else
               throw err
@@ -55,6 +58,34 @@ class Board extends events.EventEmitter
     else 
       return Promise.resolve()
 
+  setupWatchdog: ->
+    @stopWatchdog()
+    @_watchdogTimeout = setTimeout( (=>
+      now = new Date().getTime()
+      # last received data is not very old, conncection looks ok:
+      if now - @_lastDataTime < 10000
+        @setupWatchdog()
+        return
+      # Try to send ping, if it failes, there is something wrong...
+      @serialPort.writeAsync("PING\n").then( =>
+        @setupWatchdog()
+      ).timeout(5000).catch( (err) =>
+        @serialPort = null
+        @stopWatchdog()
+        @emit 'reconnect', err
+        Promise.delay(5000).then( => 
+          @connect().catch( (error) =>
+            # Could not reconnect, so start watchdog again, to trigger next try
+            @emit 'reconnect', err
+            @setupWatchdog()
+          )
+        ).done()
+      ).done()
+    ), 10000)
+
+  stopWatchdog: ->
+    clearTimeout(@_watchdogTimeout)
+
   _onData: (_line) => 
     #console.log "data:", JSON.stringify(line)
     # Sanitize data
@@ -64,7 +95,11 @@ class Board extends events.EventEmitter
       @ready = yes
       @emit 'ready'
       return
-    unless @ready then return
+    unless @ready
+      # got, data but was not ready => reset
+      @serialPort.writeAsync("RESET\n").catch( (error) -> @emit("error", error) )
+
+    @_lastDataTime = new Date().getTime()
     args = line.split(" ")
     assert args.length >= 1
     cmd = args[0]
@@ -74,6 +109,7 @@ class Board extends events.EventEmitter
       when 'ACK', 'ERR' then @_handleAcknowledge(cmd, args)
       when 'RF' then @_handleRFControl(cmd, args)
       when 'KP' then @_handleKeypad(cmd, args)
+      when 'PING' then ;#nop
       else console.log "unknown message received: #{line}"
       
 
