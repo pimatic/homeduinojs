@@ -11,29 +11,49 @@ class Board extends events.EventEmitter
   _awaitingAck: []
   ready: no
 
-  constructor: (port, baudrate = 9600) ->
-    @serialPort = new SerialPort(port, { 
-      baudrate, 
-      parser: serialport.parsers.readline("\r\n")
-    }, openImmediately = no)
-    
+  constructor: (@port, @baudrate = 9600) ->
+    #nop
 
-  connect: (timeout = 20000) -> 
-    return @pendingConnect = 
-      @serialPort.openAsync()
-      .then( =>
-        # setup data listner
-        @serialPort.on("data", @_onData)
-        resolver = null
-        return new Promise( (resolve, reject) =>
-          resolver = resolve
-          @once("ready", resolver)
-        ).timeout(timeout).catch( (err) =>
-          @removeListener("ready", resolver)
-          @removeListener("data", @_onData)
-          throw err
+  connect: (timeout = 20000, retries = 3) -> 
+    return @pendingConnect = ( 
+      if @serialPort? then @serialPort.closeAsync() 
+      else Promise.resolve() 
+    # ignore if we can't close
+    ).finally( =>
+
+      @ready = no
+      @serialPort = new SerialPort(@port, { 
+        @baudrate, 
+        parser: serialport.parsers.readline("\r\n")
+      }, openImmediately = no)
+
+      return @serialPort.openAsync()
+        .then( =>
+          # setup data listner
+          @serialPort.on("data", @_onData)
+          resolver = null
+          return new Promise( (resolve, reject) =>
+            resolver = resolve
+            @once("ready", resolver)
+          ).timeout(timeout).catch( (err) =>
+            @removeListener("ready", resolver)
+            @removeListener("data", @_onData)
+            if err.name is "TimeoutError" and retries > 0
+              @emit 'reconnect', err
+              return @connect(timeout, retries-1)
+            else
+              throw err
+          )
         )
-      )
+    )
+
+  disconnect: ->
+    if @serialPort?
+      close = @serialPort.closeAsync()
+      @serialPort = null
+      return close
+    else 
+      return Promise.resolve()
 
   _onData: (_line) => 
     #console.log "data:", JSON.stringify(line)
