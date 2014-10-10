@@ -70,7 +70,7 @@ class Board extends events.EventEmitter
 
   _onLine: (line) -> 
     #console.log "data:", JSON.stringify(line)
-    # @_lastDataTime = new Date().getTime()
+    @_lastDataTime = new Date().getTime()
     args = line.split(" ")
     assert args.length >= 1
     cmd = args[0]
