@@ -1,6 +1,9 @@
 Board = require('../index').Board
 
-board = new Board('/dev/ttyUSB0', 115200)
+board = new Board("serialport", {
+  port: '/dev/ttyUSB0', 
+  baudrate: 115200
+})
 
 board.on "keypad", (event) -> console.log event
 board.on "rfReceive", (event) -> console.log event

@@ -1,62 +1,46 @@
-serialport = require("serialport")
-SerialPort = serialport.SerialPort
 Promise = require 'bluebird'
-Promise.promisifyAll(SerialPort.prototype)
 assert = require 'assert'
 events = require 'events'
 rfcontrol = require 'rfcontroljs'
 
+SerialPortDriver = require './driver/serialport'
+
 class Board extends events.EventEmitter
 
   _awaitingAck: []
+  _opened: no
   ready: no
 
-  constructor: (@port, @baudrate = 9600) ->
-    @on('ready', => @setupWatchdog() )
+  constructor: (driver, driverOptions) ->
+    assert driver is "serialport"
+    # setup a new driver
+    @driver = new SerialPortDriver(driverOptions.port, driverOptions.baudrate)
+    @driver.on('ready', => 
+      @ready = yes
+      @emit('ready') 
+    )
+    @driver.on('error', (error) => @emit('error', error) )
+    @driver.on('reconnect', (error) => @emit('reconnect', error) )
+    @driver.on('close', => 
+      @ready = no
+      @emit('close')
+    )
+    @driver.on("data", (date) =>
+      @emit "date", date
+    )
+    @driver.on("line", (line) =>
+      @emit "line", line
+      @_onLine(line)
+    )
+    @on('ready', => @setupWatchdog())
 
   connect: (timeout = 20000, retries = 3) -> 
-    @stopWatchdog()
-    return @pendingConnect = ( 
-      if @serialPort? then @serialPort.closeAsync() 
-      else Promise.resolve() 
-    # ignore if we can't close
-    ).finally( =>
-      @ready = no
-      @serialPort = new SerialPort(@port, { 
-        @baudrate, 
-        parser: serialport.parsers.readline("\r\n")
-      }, openImmediately = no)
-      @serialPort.on('error', (error) => @emit('error', error) )
-      return @serialPort.openAsync()
-        .then( =>
-          # setup data listner
-          @serialPort.on("data", @_onData)
-          resolver = null
-          return new Promise( (resolve, reject) =>
-            # write ping to force reset (see onData) if device was not reseted probably
-            @serialPort.writeAsync("PING\n").catch(reject)
-            resolver = resolve
-            @once("ready", resolver)
-          ).timeout(timeout).catch( (err) =>
-            @removeListener("ready", resolver)
-            @removeListener("data", @_onData)
-            if err.name is "TimeoutError" and retries > 0
-              @emit 'reconnect', err
-              
-              return @connect(timeout, retries-1)
-            else
-              throw err
-          )
-        )
-    )
+    # Stop watchdog if its running and close current connection
+    return @pendingConnect = @driver.connect(timeout, retries)
 
   disconnect: ->
-    if @serialPort?
-      close = @serialPort.closeAsync()
-      @serialPort = null
-      return close
-    else 
-      return Promise.resolve()
+    @stopWatchdog()
+    return @driver.disconnect()
 
   setupWatchdog: ->
     @stopWatchdog()
@@ -67,39 +51,26 @@ class Board extends events.EventEmitter
         @setupWatchdog()
         return
       # Try to send ping, if it failes, there is something wrong...
-      @serialPort.writeAsync("PING\n").then( =>
+      @driver.write("PING\n").then( =>
         @setupWatchdog()
       ).timeout(5000).catch( (err) =>
-        @serialPort = null
-        @stopWatchdog()
         @emit 'reconnect', err
-        Promise.delay(5000).then( => 
-          @connect().catch( (error) =>
-            # Could not reconnect, so start watchdog again, to trigger next try
-            @emit 'reconnect', err
-            @setupWatchdog()
-          )
-        ).done()
-      ).done()
+        @connect().catch( (error) =>
+          # Could not reconnect, so start watchdog again, to trigger next try
+          @emit 'reconnect', err
+          @setupWatchdog()
+          return
+        )
+        return
+      )
     ), 10000)
 
   stopWatchdog: ->
     clearTimeout(@_watchdogTimeout)
 
-  _onData: (_line) => 
+  _onLine: (line) -> 
     #console.log "data:", JSON.stringify(line)
-    # Sanitize data
-    line = _line.replace(/\0/g, '').trim()
-    @emit "data", line
-    if /ready$/.test(line)
-      @ready = yes
-      @emit 'ready'
-      return
-    unless @ready
-      # got, data but was not ready => reset
-      @serialPort.writeAsync("RESET\n").catch( (error) -> @emit("error", error) )
-
-    @_lastDataTime = new Date().getTime()
+    # @_lastDataTime = new Date().getTime()
     args = line.split(" ")
     assert args.length >= 1
     cmd = args[0]
@@ -114,47 +85,48 @@ class Board extends events.EventEmitter
       
 
   whenReady: -> 
-    unless @pendingConnect? then return Promise.reject(new Error("First call connect!"))
+    unless @pendingConnect?
+      return Promise.reject(new Error("First call connect!"))
     return @pendingConnect
 
   digitalWrite: (pin, value) ->
     assert typeof pin is "number"
     assert value in [0, 1]
-    return @serialPort
-      .writeAsync("DW #{pin} #{value}\n")
+    return @driver
+      .write("DW #{pin} #{value}\n")
       .then(@_waitForAcknowledge)
 
   analogWrite: (pin, value) ->
     assert typeof pin is "number"
     assert typeof value is "number"
-    return @serialPort
-      .writeAsync("AW #{pin} #{value}\n")
+    return @driver
+      .write("AW #{pin} #{value}\n")
       .then(@_waitForAcknowledge)
 
   digitalRead: (pin) ->
     assert typeof pin is "number"
-    return @serialPort
-      .writeAsync("DR #{pin}\n")
+    return @driver
+      .write("DR #{pin}\n")
       .then(@_waitForAcknowledge)
 
   analogRead: (pin) ->
     assert typeof pin is "number"
-    return @serialPort
-      .writeAsync("AR #{pin}\n")
+    return @driver
+      .write("AR #{pin}\n")
       .then(@_waitForAcknowledge)
 
   pinMode: (pin, mode) ->
     assert typeof pin is "number"
     assert mode in  [0, 1, 2]
-    return @serialPort
-      .writeAsync("PM #{pin} #{mode}\n")
+    return @driver
+      .write("PM #{pin} #{mode}\n")
       .then(@_waitForAcknowledge)    
 
   readDHT: (type, pin) ->
     assert type in [11, 22, 33, 44, 55]
     assert typeof pin is "number"
-    return @serialPort
-      .writeAsync("DHT #{type} #{pin}\n")
+    return @driver
+      .write("DHT #{type} #{pin}\n")
       .then(@_waitForAcknowledge)
       .then( (args) -> {
         temperature: parseFloat(args[0]), 
@@ -164,8 +136,8 @@ class Board extends events.EventEmitter
   rfControlStartReceiving: (pin) ->
     assert typeof pin is "number"
     assert pin in [0, 1]
-    return @serialPort
-      .writeAsync("RF receive #{pin}\n")
+    return @driver
+      .write("RF receive #{pin}\n")
       .then(@_waitForAcknowledge)
 
   rfControlSendMessage: (pin, protocolName, message) ->
@@ -186,8 +158,8 @@ class Board extends events.EventEmitter
     while i < 8
       pulseLengthsArgs += " 0"
       i++
-    return @serialPort
-      .writeAsync("RF send #{pin} #{repeats} #{pulseLengthsArgs} #{pulses}\n")
+    return @driver
+      .write("RF send #{pin} #{repeats} #{pulseLengthsArgs} #{pulses}\n")
       .then(@_waitForAcknowledge)
 
   _onAcknowledge: () =>
