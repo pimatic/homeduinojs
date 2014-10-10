@@ -25,8 +25,8 @@ class Board extends events.EventEmitter
       @ready = no
       @emit('close')
     )
-    @driver.on("data", (date) =>
-      @emit "date", date
+    @driver.on("data", (data) =>
+      @emit "data", data
     )
     @driver.on("line", (line) =>
       @emit "line", line

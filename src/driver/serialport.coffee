@@ -31,7 +31,6 @@ class SerialPortserialPort extends events.EventEmitter
 
       # setup data listner
       @serialPort.on("data", (data) => 
-        console.log data
         # Sanitize data
         line = data.replace(/\0/g, '').trim()
         @emit('data', line) 
