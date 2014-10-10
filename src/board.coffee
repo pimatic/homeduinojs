@@ -14,7 +14,7 @@ class Board extends events.EventEmitter
   constructor: (driver, driverOptions) ->
     assert driver is "serialport"
     # setup a new driver
-    @driver = new SerialPortDriver(driverOptions.port, driverOptions.baudrate)
+    @driver = new SerialPortDriver(driverOptions)
     @driver.on('ready', => 
       @ready = yes
       @emit('ready') 

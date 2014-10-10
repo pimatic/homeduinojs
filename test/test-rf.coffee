@@ -1,7 +1,7 @@
 Board = require('../index').Board
 
 board = new Board("serialport", {
-  port: '/dev/ttyUSB0', 
+  serialDevice: '/dev/ttyUSB0', 
   baudrate: 115200
 })
 

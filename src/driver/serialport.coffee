@@ -9,9 +9,9 @@ Promise.promisifyAll(SerialPort.prototype)
 
 class SerialPortserialPort extends events.EventEmitter
 
-  constructor: (port, baudrate)->
-    @serialPort = new SerialPort(port, { 
-      baudrate, 
+  constructor: (protocolOptions)->
+    @serialPort = new SerialPort(protocolOptions.serialDevice, { 
+      baudrate: protocolOptions.baudrate, 
       parser: serialport.parsers.readline("\r\n")
     }, openImmediately = no)
 
