@@ -2,6 +2,7 @@ events = require 'events'
 
 Promise = require 'bluebird'
 spawn = require('child_process').spawn
+readline = require 'readline'
 path = require 'path'
 
 class GpioDriver extends events.EventEmitter
@@ -15,7 +16,10 @@ class GpioDriver extends events.EventEmitter
     @vhduino = spawn @binary
     Promise.promisifyAll(@vhduino.stdin)
 
-    @vhduino.stdout.on('data', (data) => 
+    readline.createInterface({
+      input: @vhduino.stdout
+      terminal: false
+    }).on('line', (line) =>
       @emit('data', line) 
       if line is "ready"
         @ready = yes
@@ -23,6 +27,7 @@ class GpioDriver extends events.EventEmitter
         return
       @emit('line', line) 
     )
+
     @vhduino.stderr.on('data',  (data) => @emit('data', data) )
     @vhduino.on('close', (code) => @emit 'close' )
     @vhduino.on('error', (error) => @emit('error', error) )
