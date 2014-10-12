@@ -9,7 +9,6 @@ class GpioDriver extends events.EventEmitter
   constructor: (@protocolOptions)->
     @binary = path.resolve __dirname, '../bin/vhduino'
 
-
   connect: (timeout, retries) ->
     # cleanup
     @ready = no
@@ -39,4 +38,4 @@ class GpioDriver extends events.EventEmitter
 
   write: (data) -> @vhduino.stdin.writeAsyc(data, 'ascii')
 
-module.exports = SerialPortserialPort
+module.exports = GpioDriver
