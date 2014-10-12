@@ -7,7 +7,7 @@ Promise = require 'bluebird'
 Promise.promisifyAll(SerialPort.prototype)
 
 
-class SerialPortserialPort extends events.EventEmitter
+class SerialPortDriver extends events.EventEmitter
 
   constructor: (protocolOptions)->
     @serialPort = new SerialPort(protocolOptions.serialDevice, { 
@@ -68,4 +68,4 @@ class SerialPortserialPort extends events.EventEmitter
 
   write: (data) -> @serialPort.writeAsync(data)
 
-module.exports = SerialPortserialPort
+module.exports = SerialPortDriver

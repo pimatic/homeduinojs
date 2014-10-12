@@ -3,7 +3,7 @@ assert = require 'assert'
 events = require 'events'
 rfcontrol = require 'rfcontroljs'
 
-SerialPortDriver = require './driver/serialport'
+
 
 class Board extends events.EventEmitter
 
@@ -12,9 +12,16 @@ class Board extends events.EventEmitter
   ready: no
 
   constructor: (driver, driverOptions) ->
-    assert driver is "serialport"
+    assert driver in ["serialport", "gpio"]
     # setup a new driver
-    @driver = new SerialPortDriver(driverOptions)
+    switch driver
+      when "serialport"
+        SerialPortDriver = require './driver/serialport'
+        @driver = new SerialPortDriver(driverOptions)
+      when "gpio"
+        GpioDriver =  require './driver/gpio'
+        @driver = new GpioDriver(driverOptions)
+      
     @driver.on('ready', => 
       @ready = yes
       @emit('ready') 
