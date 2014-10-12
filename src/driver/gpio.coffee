@@ -8,16 +8,13 @@ path = require 'path'
 class GpioDriver extends events.EventEmitter
 
   constructor: (@protocolOptions)->
-    @binary = path.resolve __dirname, '../bin/vhduino'
-
+    @binary = path.resolve __dirname, '../../bin/vhduino'
   connect: (timeout, retries) ->
     # cleanup
     @ready = no
     @vhduino = spawn @binary
-    Promise.promisifyAll(@vhduino.stdin)
-
     readline.createInterface({
-      input: @vhduino.stdout
+      input: @vhduino.stderr
       terminal: false
     }).on('line', (line) =>
       @emit('data', line) 
@@ -26,14 +23,14 @@ class GpioDriver extends events.EventEmitter
         @emit 'ready'
         return
       @emit('line', line) 
-    )
-
-    @vhduino.stderr.on('data',  (data) => @emit('data', data) )
+   )
+    @vhduino.stdout.on('data',  (data) => @emit('data', data.toString()) )
     @vhduino.on('close', (code) => @emit 'close' )
     @vhduino.on('error', (error) => @emit('error', error) )
 
+#    return Promise.resolve()
     return new Promise( (resolve, reject) =>
-      @once("ready", resolver)
+      @once("ready", resolve)
       @once("error", reject)
     )
 
@@ -41,6 +38,11 @@ class GpioDriver extends events.EventEmitter
     @vhduino.kill()
     return Promise.resolve()
 
-  write: (data) -> @vhduino.stdin.writeAsyc(data, 'ascii')
+  write: (data) -> 
+    return new Promise( (resolve, reject) => 
+      @vhduino.stdin.write(data, 'ascii', (err) => 
+        if err? then reject(err) else resolve() 
+      )
+    )
 
 module.exports = GpioDriver
