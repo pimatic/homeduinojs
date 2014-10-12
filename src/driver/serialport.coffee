@@ -40,7 +40,7 @@ class SerialPortserialPort extends events.EventEmitter
           return
         unless @ready
           # got, data but was not ready => reset
-          @driver.write("RESET\n").catch( (error) -> @emit("error", error) )
+          @serialPort.writeAsync("RESET\n").catch( (error) -> @emit("error", error) )
           return
         @emit('line', line) 
       )
