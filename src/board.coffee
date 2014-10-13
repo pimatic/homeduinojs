@@ -131,7 +131,7 @@ class Board extends events.EventEmitter
 
   readDHT: (type, pin) ->
     assert type in [11, 22, 33, 44, 55]
-    assert typeof pin is "number"
+    assert (typeof pin is "number"), "pin should be a number"
     return @driver
       .write("DHT #{type} #{pin}\n")
       .then(@_waitForAcknowledge)
@@ -141,8 +141,7 @@ class Board extends events.EventEmitter
       })
 
   rfControlStartReceiving: (pin) ->
-    assert typeof pin is "number"
-    assert pin in [0, 1]
+    assert (typeof pin is "number"), "pin should be a number"
     return @driver
       .write("RF receive #{pin}\n")
       .then(@_waitForAcknowledge)
