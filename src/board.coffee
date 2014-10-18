@@ -155,7 +155,7 @@ class Board extends events.EventEmitter
     assert Array.isArray(pulseLengths), "pulseLengths should be an array"
     assert pulseLengths.length <= 8, "pulseLengths.length should be <= 8"
     assert typeof pulses is "string", "pulses should be a string"
-    repeats = 5
+    repeats = 7
     pulseLengthsArgs = ""
     i = 0
     for pl in pulseLengths
