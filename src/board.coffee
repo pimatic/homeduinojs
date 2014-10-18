@@ -3,7 +3,7 @@ assert = require 'assert'
 events = require 'events'
 rfcontrol = require 'rfcontroljs'
 
-
+settled = (promise) -> Promise.settle([promise])
 
 class Board extends events.EventEmitter
 
@@ -21,7 +21,8 @@ class Board extends events.EventEmitter
       when "gpio"
         GpioDriver =  require './driver/gpio'
         @driver = new GpioDriver(driverOptions)
-      
+    
+    @_lastAction = Promise.resolve()
     @driver.on('ready', => 
       @ready = yes
       @emit('ready') 
@@ -96,45 +97,40 @@ class Board extends events.EventEmitter
       return Promise.reject(new Error("First call connect!"))
     return @pendingConnect
 
+
+  writeAndWait: (data) ->
+    return @_lastAction = settled(@_lastAction).then( => 
+      return Promise.all([@driver.write(data), @_waitForAcknowledge()])
+        .then( ([_, result]) -> result )
+    )
+
   digitalWrite: (pin, value) ->
     assert typeof pin is "number"
     assert value in [0, 1]
-    return @driver
-      .write("DW #{pin} #{value}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("DW #{pin} #{value}\n")
 
   analogWrite: (pin, value) ->
     assert typeof pin is "number"
     assert typeof value is "number"
-    return @driver
-      .write("AW #{pin} #{value}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("AW #{pin} #{value}\n")
 
   digitalRead: (pin) ->
     assert typeof pin is "number"
-    return @driver
-      .write("DR #{pin}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("DR #{pin}\n")
 
   analogRead: (pin) ->
     assert typeof pin is "number"
-    return @driver
-      .write("AR #{pin}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("AR #{pin}\n")
 
   pinMode: (pin, mode) ->
     assert typeof pin is "number"
     assert mode in  [0, 1, 2]
-    return @driver
-      .write("PM #{pin} #{mode}\n")
-      .then(@_waitForAcknowledge)    
+    return @writeAndWait("PM #{pin} #{mode}\n")    
 
   readDHT: (type, pin) ->
     assert type in [11, 22, 33, 44, 55]
     assert (typeof pin is "number"), "pin should be a number"
-    return @driver
-      .write("DHT #{type} #{pin}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("DHT #{type} #{pin}\n")
       .then( (args) -> {
         temperature: parseFloat(args[0]), 
         humidity: parseFloat(args[1])
@@ -142,9 +138,7 @@ class Board extends events.EventEmitter
 
   rfControlStartReceiving: (pin) ->
     assert (typeof pin is "number"), "pin should be a number"
-    return @driver
-      .write("RF receive #{pin}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("RF receive #{pin}\n")
 
   rfControlSendMessage: (pin, protocolName, message) ->
     result = rfcontrol.encodeMessage(protocolName, message)
@@ -164,9 +158,7 @@ class Board extends events.EventEmitter
     while i < 8
       pulseLengthsArgs += " 0"
       i++
-    return @driver
-      .write("RF send #{pin} #{repeats} #{pulseLengthsArgs} #{pulses}\n")
-      .then(@_waitForAcknowledge)
+    return @writeAndWait("RF send #{pin} #{repeats} #{pulseLengthsArgs} #{pulses}\n")
 
   _onAcknowledge: () =>
     return new Promise( (resolve) =>
