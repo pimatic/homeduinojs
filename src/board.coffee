@@ -130,7 +130,7 @@ class Board extends events.EventEmitter
 
   pinMode: (pin, mode) ->
     assert typeof pin is "number"
-    assert mode in  [0, 1, 2]
+    assert mode in [0, 1, 2]
     return @writeAndWait("PM #{pin} #{mode}\n")    
 
   readDHT: (type, pin) ->
