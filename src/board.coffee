@@ -7,6 +7,12 @@ settled = (promise) -> Promise.settle([promise])
 
 class Board extends events.EventEmitter
 
+  @HIGH=1
+  @LOW=0
+  @INPUT=0
+  @OUTPUT=1
+  @INPUT_PULLUP=2
+
   _awaitingAck: []
   _opened: no
   ready: no
