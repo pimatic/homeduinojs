@@ -30,6 +30,7 @@ class Board extends events.EventEmitter
     
     @_lastAction = Promise.resolve()
     @driver.on('ready', => 
+      @_lastDataTime = new Date().getTime()
       @ready = yes
       @emit('ready') 
     )
@@ -48,7 +49,7 @@ class Board extends events.EventEmitter
     )
     @on('ready', => @setupWatchdog())
 
-  connect: (timeout = 20000, retries = 3) -> 
+  connect: (@timeout = 5*60*1000, @retries = 3) -> 
     # Stop watchdog if its running and close current connection
     return @pendingConnect = @driver.connect(timeout, retries)
 
@@ -61,23 +62,22 @@ class Board extends events.EventEmitter
     @_watchdogTimeout = setTimeout( (=>
       now = new Date().getTime()
       # last received data is not very old, conncection looks ok:
-      if now - @_lastDataTime < 10000
+      if now - @_lastDataTime < @timeout
         @setupWatchdog()
         return
       # Try to send ping, if it failes, there is something wrong...
       @driver.write("PING\n").then( =>
         @setupWatchdog()
-      ).timeout(5000).catch( (err) =>
+      ).timeout(20*1000).catch( (err) =>
         @emit 'reconnect', err
-        @connect().catch( (error) =>
+        @connect(@timeout, @retries).catch( (error) =>
           # Could not reconnect, so start watchdog again, to trigger next try
           @emit 'reconnect', err
-          @setupWatchdog()
           return
         )
         return
       )
-    ), 10000)
+    ), 20*1000)
 
   stopWatchdog: ->
     clearTimeout(@_watchdogTimeout)
