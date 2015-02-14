@@ -108,7 +108,7 @@ class Board extends events.EventEmitter
     return @_lastAction = settled(@_lastAction).then( => 
       return Promise.all([@driver.write(data), @_waitForAcknowledge()])
         .then( ([_, result]) -> 
-          console.log "writeAndWait result: ", result
+          #console.log "writeAndWait result: ", result
           result )
     )
 
