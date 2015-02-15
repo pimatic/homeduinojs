@@ -107,7 +107,9 @@ class Board extends events.EventEmitter
   writeAndWait: (data) ->
     return @_lastAction = settled(@_lastAction).then( => 
       return Promise.all([@driver.write(data), @_waitForAcknowledge()])
-        .then( ([_, result]) -> result )
+        .then( ([_, result]) -> 
+          #console.log "writeAndWait result: ", result
+          result )
     )
 
   digitalWrite: (pin, value) ->
@@ -137,10 +139,25 @@ class Board extends events.EventEmitter
     assert type in [11, 22, 33, 44, 55]
     assert (typeof pin is "number"), "pin should be a number"
     return @writeAndWait("DHT #{type} #{pin}\n")
-      .then( (args) -> {
-        temperature: parseFloat(args[0]), 
-        humidity: parseFloat(args[1])
-      })
+      .then( (args) -> 
+        #console.log "readDHT args[0]: ", args[0]
+        {
+          temperature: parseFloat(args[0]), 
+          humidity: parseFloat(args[1])
+        })
+
+
+  readDST: () ->
+    reading = @writeAndWait("DST \n")
+
+    promise = reading
+      .then( (args) -> 
+        #console.log "readDST args: ", args
+        {
+          temperature: parseFloat(args)
+        })
+
+    return promise
 
   rfControlStartReceiving: (pin) ->
     assert (typeof pin is "number"), "pin should be a number"
