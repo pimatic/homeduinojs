@@ -146,17 +146,37 @@ class Board extends events.EventEmitter
           humidity: parseFloat(args[1])
         })
 
-
-  readDST: () ->
-    reading = @writeAndWait("DST \n")
-
+  #DST [pin] sensors
+  readDstSensors: (pin)->
+    reading = @writeAndWait("DST #{pin} sensors\n")
     promise = reading
       .then( (args) -> 
-        #console.log "readDST args: ", args
+        console.log "readDstSensors: ", args
         {
-          temperature: parseFloat(args)
+          
         })
+    return promise
 
+  #DST [pin] [address] -> single temperature C
+  readDstSensor: (pin, address)->
+    reading = @writeAndWait("DST #{pin} #{address}\n")
+    promise = reading
+      .then( (args) -> 
+        console.log "readDstSensor: ", args
+        {
+          
+        })
+    return promise
+  
+  #DST [pin] all -> all temperatures on that pin.
+  readDstAll: (pin) ->
+    reading = @writeAndWait("DST #{pin} all\n")
+    promise = reading
+      .then( (args) -> 
+        console.log "readDstAll args: ", args
+        {
+          temperature: parseFloat(args[0])
+        })
     return promise
 
   rfControlStartReceiving: (pin) ->
