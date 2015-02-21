@@ -29,15 +29,39 @@ board.readDHT(22, 13).then( (ret) ->
 ).done()
 ```
 
-### readDST()
 
-Read a Dallas DS18B20 sensor
+### readDstSensors (pin)
+
+Returns all Dallas temp sensors on [pin]
 
 ```CoffeeScript
-board.readDST().then( (ret) -> 
+board.readDstSensors(12).then( (ret) -> 
+  console.log ret.sensors
+).done()
+```
+
+
+### readDstSensor (pin, address)
+
+Reads a sensor with [address] on [pin].
+
+```CoffeeScript
+board.readDstSensor(12, '12312312333').then( (ret) -> 
   console.log ret.temperature
 ).done()
 ```
+
+
+### readDstAll (pin)
+
+Reads all sensors connected to [pin]
+
+```CoffeeScript
+board.readDstAll(12).then( (ret) -> 
+  console.log ret.temperatures
+).done()
+```
+
 
 ### rfControlStartReceiving(pin)
 
