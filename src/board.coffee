@@ -146,7 +146,7 @@ class Board extends events.EventEmitter
           humidity: parseFloat(args[1])
         })
 
-  #DST [pin] sensors
+  #DST [pin] sensors -> gets all sensor addresses on that pin
   readDstSensors: (pin)->
     reading = @writeAndWait("DST #{pin} sensors\n")
     promise = reading
