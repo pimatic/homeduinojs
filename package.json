@@ -19,13 +19,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ronaldsteen/homeduinojs-dst.git"
+    "url": "git://github.com/pimatic/homeduinojs.git"
   },
   "author": "Oliver Schneider <oliverschneider89+sweetpi@gmail.com>",
   "contributors" : ["Ronald Steen <ronald.steen@gmail.com>"],
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/ronaldsteen/homeduinojs-dst/issues"
+    "url": "https://github.com/pimatic/homeduinojs/issues"
   },
   "dependencies": {
     "bluebird": "~2.2.2",
