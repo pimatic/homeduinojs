@@ -163,7 +163,6 @@ class Board extends events.EventEmitter
     reading = @writeAndWait("DST #{pin} #{address}\n")
     promise = reading
       .then( (args) -> 
-        console.log "readDstSensor: ", args
         {
           temperature: parseFloat(args) 
         })
@@ -174,7 +173,6 @@ class Board extends events.EventEmitter
     reading = @writeAndWait("DST #{pin} all\n")
     promise = reading
       .then( (args) -> 
-        console.log "readDstAll args: ", args
         {
           temperature: parseFloat(args[0])
         })
