@@ -182,16 +182,15 @@ class Board extends events.EventEmitter
     assert (typeof pin is "number"), "pin should be a number"
     return @writeAndWait("RF receive #{pin}\n")
 
-  rfControlSendMessage: (pin, protocolName, message) ->
+  rfControlSendMessage: (pin, repeats, protocolName, message) ->
     result = rfcontrol.encodeMessage(protocolName, message)
-    return @rfControlSendPulses(pin, result.pulseLengths, result.pulses)
+    return @rfControlSendPulses(pin, repeats, result.pulseLengths, result.pulses)
 
-  rfControlSendPulses: (pin, pulseLengths, pulses) ->
+  rfControlSendPulses: (pin, repeats, pulseLengths, pulses) ->
     assert typeof pin is "number", "pin should be a number"
     assert Array.isArray(pulseLengths), "pulseLengths should be an array"
     assert pulseLengths.length <= 8, "pulseLengths.length should be <= 8"
     assert typeof pulses is "string", "pulses should be a string"
-    repeats = 7
     pulseLengthsArgs = ""
     i = 0
     for pl in pulseLengths
