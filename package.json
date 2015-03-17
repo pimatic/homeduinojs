@@ -30,9 +30,9 @@
     "url": "https://github.com/pimatic/homeduinojs/issues"
   },
   "dependencies": {
-    "bluebird": "~2.2.2",
+    "bluebird": "~2.9.14",
     "otaat-repl": "^1.0.1",
-    "rfcontroljs": "~0.0.26",
+    "rfcontroljs": "~0.0.27",
     "serialport": "~1.4.5"
   },
   "devDependencies": {
