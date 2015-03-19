@@ -226,9 +226,10 @@ class Board extends events.EventEmitter
     return
   
   _handleRFControl: (cmd, args) ->
-    assert args.length is 10
-    assert args[0] is 'receive'
-
+    unless args.length is 10 and args[0] is 'receive'
+      console.log "Unknown RF response \"#{args.join(" ")}\""
+      return
+    
     strSeq = args[1]
     for a in args[2..9]
       strSeq += " #{a}"
