@@ -125,15 +125,13 @@ class Board extends events.EventEmitter
   digitalRead: (pin) ->
     assert typeof pin is "number"
     return @writeAndWait("DR #{pin}\n")
-      .then( (result) ->
-        if result is "#{Board.HIGH}" then 1 #or with parseInt?
-        else 0
-        )
+      .then( (result) -> parseInt(result, 10) )
 
 
   analogRead: (pin) ->
     assert typeof pin is "number"
     return @writeAndWait("AR #{pin}\n")
+      .then( (result) -> parseInt(result, 10) )
 
   pinMode: (pin, mode) ->
     assert typeof pin is "number"
