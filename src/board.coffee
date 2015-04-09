@@ -238,11 +238,20 @@ class Board extends events.EventEmitter
       strSeq += " #{a}"
 
     info = rfcontrol.prepareCompressedPulses(strSeq)
+    @_emitReceive(info)
+    return
+
+  provessExternalReceive: (pulseLengths, pulses) ->
+    info = rfcontrol.sortCompressedPulses(pulseLengths, pulses)
+    @_emitReceive(info)
+    return
+
+  _emitReceive: (info) ->
     @emit 'rfReceive', info
     results = rfcontrol.decodePulses(info.pulseLengths, info.pulses)
     for r in results
       @emit 'rf', r
-    return
+    return    
 
   _handleKeypad: (cmd, args) ->
     assert args.length is 1
