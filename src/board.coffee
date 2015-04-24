@@ -139,7 +139,7 @@ class Board extends events.EventEmitter
     return @writeAndWait("PM #{pin} #{mode}\n")    
 
   readDHT: (type, pin) ->
-    assert type in [11, 22, 33, 44, 55]
+    assert type in [11, 21, 22, 33, 44, 55]
     assert (typeof pin is "number"), "pin should be a number"
     return @writeAndWait("DHT #{type} #{pin}\n")
       .then( (args) -> 
