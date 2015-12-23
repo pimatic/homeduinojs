@@ -36,8 +36,9 @@
     "serialport": "~1.4.5"
   },
   "devDependencies": {
+    "coffee-script": "^1.7.1",
     "colors": "^0.6.2",
-    "gulp": "~3.8.6",
+    "gulp": "~3.9.0",
     "gulp-coffee": "~2.1.1",
     "gulp-plumber": "~0.6.4",
     "gulp-watch": "~0.6.9"
