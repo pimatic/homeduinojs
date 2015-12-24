@@ -69,6 +69,7 @@ class Board extends events.EventEmitter
         @setupWatchdog()
         return
       # Try to send ping, if it failes, there is something wrong...
+      @emit 'debugSend', "PING"
       @driver.write("PING\n").then( =>
         @setupWatchdog()
       ).timeout(20*1000).catch( (err) =>
