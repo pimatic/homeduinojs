@@ -16,17 +16,20 @@ class Board extends events.EventEmitter
   _awaitingAck: []
   _opened: no
   ready: no
+  #_debugLevel = 2
 
-  constructor: (driver, driverOptions) ->
-    assert driver in ["serialport", "gpio"]
+  constructor: (@config) ->
+    assert @config.driver in ["serialport", "gpio"]
     # setup a new driver
-    switch driver
+    #console.log(@config.debugLevel)
+    #@_debugLevel = @config.debugLevel
+    switch @config.driver
       when "serialport"
         SerialPortDriver = require './driver/serialport'
-        @driver = new SerialPortDriver(driverOptions)
+        @driver = new SerialPortDriver(@config.driverOptions)
       when "gpio"
         GpioDriver =  require './driver/gpio'
-        @driver = new GpioDriver(driverOptions)
+        @driver = new GpioDriver(@config.driverOptions)
     
     @_lastAction = Promise.resolve()
     @driver.on('ready', => 
@@ -106,8 +109,10 @@ class Board extends events.EventEmitter
 
   writeAndWait: (data) ->
     return @_lastAction = settled(@_lastAction).then( => 
+      @emit 'debugSend', data.replace(/\r?\n|\r/,"")
       return Promise.all([@driver.write(data), @_waitForAcknowledge()])
-        .then( ([_, result]) -> 
+        .then( ([_, result]) => 
+          #@emit 'debugResult', _
           #console.log "writeAndWait result: ", result
           result )
     )
