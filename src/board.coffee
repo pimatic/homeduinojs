@@ -29,10 +29,10 @@ class Board extends events.EventEmitter
         @driver = new GpioDriver(driverOptions)
     
     @_lastAction = Promise.resolve()
-    @driver.on('ready', => 
+    @driver.on('ready', (boardinfo) => 
       @_lastDataTime = new Date().getTime()
       @ready = yes
-      @emit('ready') 
+      @emit('ready', boardinfo) 
     )
     @driver.on('error', (error) => @emit('error', error) )
     @driver.on('reconnect', (error) => @emit('reconnect', error) )

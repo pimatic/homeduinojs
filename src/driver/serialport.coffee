@@ -34,9 +34,10 @@ class SerialPortDriver extends events.EventEmitter
         # Sanitize data
         line = data.replace(/\0/g, '').trim()
         @emit('data', line) 
-        if line is "ready"
+        readyLine = line.match(/ready(?: ([a-z]+)-([0-9]+\.[0-9]+\.[0-9]+))?/)
+        if readyLine?
           @ready = yes
-          @emit 'ready'
+          @emit 'ready', {tag: readyLine[1], version: readyLine[2]}
           return
         unless @ready
           # got, data but was not ready => reset

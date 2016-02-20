@@ -20,7 +20,7 @@ class GpioDriver extends events.EventEmitter
       @emit('data', line) 
       if line is "ready"
         @ready = yes
-        @emit 'ready'
+        @emit 'ready', {tag: 'gpio'}
         return
       @emit('line', line) 
    )
