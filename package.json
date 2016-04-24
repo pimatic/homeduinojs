@@ -1,6 +1,6 @@
 {
   "name": "homeduino",
-  "version": "0.0.53",
+  "version": "0.0.54",
   "description": "Node.js library for interfacing with the homeduino ardunio library",
   "main": "index.js",
   "files": [
@@ -32,7 +32,7 @@
   "dependencies": {
     "bluebird": "~2.9.14",
     "otaat-repl": "^1.0.1",
-    "rfcontroljs": "~0.0.49",
+    "rfcontroljs": "~0.0.50",
     "serialport": "~2.0.6"
   },
   "devDependencies": {
