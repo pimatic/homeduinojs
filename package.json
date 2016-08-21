@@ -1,6 +1,6 @@
 {
   "name": "homeduino",
-  "version": "0.0.60",
+  "version": "0.0.61",
   "description": "Node.js library for interfacing with the homeduino ardunio library",
   "main": "index.js",
   "files": [
