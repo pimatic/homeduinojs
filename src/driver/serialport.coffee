@@ -29,7 +29,7 @@ class SerialPortDriver extends events.EventEmitter
     return @serialPort.openAsync().then( =>
       resolver = null
 
-      # setup data listner
+      # setup data listener
       @serialPort.on("data", (data) => 
         # Sanitize data
         line = data.replace(/\0/g, '').trim()
@@ -47,7 +47,7 @@ class SerialPortDriver extends events.EventEmitter
       )
 
       return new Promise( (resolve, reject) =>
-        # write ping to force reset (see data listerner) if device was not reseted probably
+        # write ping to force reset (see data listener) if device was not reset probably
         Promise.delay(1000).then( =>
           @serialPort.writeAsync("PING\n").catch(reject)
         ).done()

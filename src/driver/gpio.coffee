@@ -23,7 +23,7 @@ class GpioDriver extends events.EventEmitter
         @emit 'ready', {tag: 'gpio'}
         return
       @emit('line', line) 
-   )
+    )
     @vhduino.stdout.on('data',  (data) => @emit('data', data.toString()) )
     @vhduino.on('close', (code) => @emit 'close' )
     @vhduino.on('error', (error) => @emit('error', error) )
