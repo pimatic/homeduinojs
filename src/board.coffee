@@ -51,7 +51,7 @@ class Board extends events.EventEmitter
 
   connect: (@timeout = 5*60*1000, @retries = 3) -> 
     # Stop watchdog if its running and close current connection
-    return @pendingConnect = @driver.connect(timeout, retries)
+    return @pendingConnect = @driver.connect(@timeout, @retries)
 
   disconnect: ->
     @stopWatchdog()
