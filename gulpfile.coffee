@@ -9,3 +9,10 @@ gulp.task('default', ->
     .pipe(coffee(bare: yes))
     .pipe(gulp.dest('lib'))
 )
+
+gulp.task('build', ->
+  gulp.src('src/**/*.coffee')
+  .pipe(plumber()) # This will keep pipes working after error event
+  .pipe(coffee(bare: yes))
+  .pipe(gulp.dest('lib'))
+)
