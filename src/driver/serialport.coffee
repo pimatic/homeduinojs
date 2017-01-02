@@ -1,7 +1,6 @@
 events = require 'events'
 
-serialport = require("serialport")
-SerialPort = serialport.SerialPort
+SerialPort = require("serialport")
 
 Promise = require 'bluebird'
 Promise.promisifyAll(SerialPort.prototype)
@@ -12,8 +11,9 @@ class SerialPortDriver extends events.EventEmitter
   constructor: (protocolOptions)->
     @serialPort = new SerialPort(protocolOptions.serialDevice, { 
       baudrate: protocolOptions.baudrate, 
-      parser: serialport.parsers.readline("\r\n")
-    }, openImmediately = no)
+      parser: SerialPort.parsers.readline("\r\n"),
+      autoOpen: false
+    })
 
 
   connect: (timeout, retries) ->
@@ -24,13 +24,17 @@ class SerialPortDriver extends events.EventEmitter
     @serialPort.removeAllListeners('close')
 
     @serialPort.on('error', (error) => @emit('error', error) )
-    @serialPort.on('close', => @emit 'close' )
+    @serialPort.on('close', =>
+      @serialPort.removeAllListeners('data')
+      @serialPort.removeAllListeners('close')
+      @emit 'close'
+    )
 
     return @serialPort.openAsync().then( =>
       resolver = null
 
       # setup data listener
-      @serialPort.on("data", (data) => 
+      @serialPort.on("data", (data) =>
         # Sanitize data
         line = data.replace(/\0/g, '').trim()
         @emit('data', line) 
