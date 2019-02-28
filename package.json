@@ -34,7 +34,7 @@
     "bluebird": "~3.4.7",
     "otaat-repl": "^1.0.2",
     "rfcontroljs": "~0.0.58",
-    "serialport": "^4.0.7"
+    "serialport": "^6.2.2"
   },
   "devDependencies": {
     "coffee-script": "^1.12.2",
