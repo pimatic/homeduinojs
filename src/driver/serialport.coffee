@@ -1,6 +1,7 @@
 events = require 'events'
 
 SerialPort = require("serialport")
+Delimiter = SerialPort.parsers.Delimiter
 
 Promise = require 'bluebird'
 Promise.promisifyAll(SerialPort.prototype)
@@ -9,15 +10,20 @@ Promise.promisifyAll(SerialPort.prototype)
 class SerialPortDriver extends events.EventEmitter
 
   constructor: (protocolOptions)->
-    @serialPort = new SerialPort(protocolOptions.serialDevice, { 
-      baudrate: protocolOptions.baudrate, 
-      parser: SerialPort.parsers.readline("\r\n"),
+    super()
+    @serialPort = new SerialPort(protocolOptions.serialDevice, {
+      baudRate: protocolOptions.baudrate,
       autoOpen: false
     })
 
+  _open: () ->
+    unless @serialPort.isOpen
+      @serialPort.openAsync()
+    else
+      Promise.resolve()
 
   connect: (timeout, retries) ->
-    # cleanup
+    resolver = null
     @ready = no
     @serialPort.removeAllListeners('error')
     @serialPort.removeAllListeners('data')
@@ -29,44 +35,43 @@ class SerialPortDriver extends events.EventEmitter
       @serialPort.removeAllListeners('close')
       @emit 'close'
     )
+    @parser = @serialPort.pipe(new Delimiter({ delimiter: '\r\n', encoding: 'ascii' }))
 
-    return @serialPort.openAsync().then( =>
-      resolver = null
-
-      # setup data listener
-      @serialPort.on("data", (data) =>
-        # Sanitize data
-        line = data.replace(/\0/g, '').trim()
-        @emit('data', line) 
-        readyLine = line.match(/ready(?: ([a-z]+)-([0-9]+\.[0-9]+\.[0-9]+))?/)
-        if readyLine?
-          @ready = yes
-          @emit 'ready', {tag: readyLine[1], version: readyLine[2]}
-          return
+    # setup data listener
+    @parser.on("data", (data) =>
+      # Sanitize data
+      line = data.replace(/\0/g, '').trim()
+      @emit('data', line)
+      readyLine = line.match(/ready(?: ([a-z]+)-([0-9]+\.[0-9]+\.[0-9]+))?/)
+      if readyLine?
+        @ready = yes
+        @emit 'ready', {tag: readyLine[1], version: readyLine[2]}
+      else
         unless @ready
           # got, data but was not ready => reset
           @serialPort.writeAsync("RESET\n").catch( (error) -> @emit("error", error) )
-          return
-        @emit('line', line) 
-      )
-
-      return new Promise( (resolve, reject) =>
-        # write ping to force reset (see data listener) if device was not reset probably
-        Promise.delay(1000).then( =>
-          @serialPort.writeAsync("PING\n").catch(reject)
-        ).done()
-        resolver = resolve
-        @once("ready", resolver)
-      ).timeout(timeout).catch( (err) =>
-        @removeListener("ready", resolver)
-        @serialPort.removeAllListeners('data')
-        if err.name is "TimeoutError" and retries > 0
-          @emit 'reconnect', err
-          # try to reconnect
-          return @connect(timeout, retries-1)
         else
-          throw err
+          @emit('line', line)
+    )
+
+    return new Promise( (resolve, reject) =>
+      resolver = resolve
+      @_open().then(() =>
+        Promise.delay(1000).then( =>
+          # write ping to force reset (see data listener) if device was not reset probably
+          @serialPort.writeAsync("PING\n").catch(reject)
+          @once("ready", resolver)
+        )
       )
+    ).timeout(timeout).catch( (err) =>
+      @removeListener("ready", resolver)
+      @serialPort.removeAllListeners('data')
+      if err.name is "TimeoutError" and retries > 0
+        @emit 'reconnect', err
+        # try to reconnect
+        return @connect(timeout, retries-1)
+      else
+        throw err
     )
 
   disconnect: -> @serialPort.closeAsync()
