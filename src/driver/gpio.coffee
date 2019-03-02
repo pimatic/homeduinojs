@@ -28,7 +28,6 @@ class GpioDriver extends events.EventEmitter
     @vhduino.on('close', (code) => @emit 'close' )
     @vhduino.on('error', (error) => @emit('error', error) )
 
-#    return Promise.resolve()
     return new Promise( (resolve, reject) =>
       @once("ready", resolve)
       @once("error", reject)
@@ -36,7 +35,7 @@ class GpioDriver extends events.EventEmitter
 
   disconnect: -> 
     @vhduino.kill()
-    return Promise.resolve()
+    return Promise.delay(1000)
 
   write: (data) -> 
     return new Promise( (resolve, reject) => 
