@@ -118,3 +118,5 @@ homeduino> board.rfControlStartReceiving(0)
 data: "ACK"
 undefined
 ```
+
+The output is colorized by default. You can disable colors by starting the repl client with the option `--no-color`. 
