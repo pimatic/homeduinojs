@@ -98,25 +98,37 @@ board.pinMode(1, 0).done()
 REPL-Client
 -----------
 
+Setup:
+
 ```
 git clone https://github.com/pimatic/homeduinojs && cd homeduinojs && npm install
 ```
 
-Start the repl client:
+Start the REPL-Client:
 
 ```
 sudo ./client.js /dev/ttyUSB0 115200
 ```
 
-It will connect to the arduino and give you a prompt, where you can enter a javascript command:
+It will connect to the arduino and give you a prompt, where you can enter a 
+ javascript command. To start receiving RF data enter the command 
+ `board.rfControlStartReceiving(0)` or  `board.rfControlStartReceiving(1)`
+ depending on the receiving pin used in your setup
 
 ```
 connecting to /dev/ttyUSB0 with 115200
-data: "ready"
+raw data: "ready"
 connected
 homeduino> board.rfControlStartReceiving(0)
-data: "ACK"
+raw data: "ACK"
 undefined
+homeduino> raw data: "RF receive 516 1928 3880 9204 0 0 0 0 01020102010202020201010102010101010101010202020101010101010102010201020103"
+processed: "pulseLengths":[516,1928,3880,9204],"pulses":"01020102010202020201010102010101010101010202020101010101010102010201020103"
+matched proto: "weather1: {"id":120,"channel":1,"temperature":22.4,"humidity":42,"lowBattery":false}"
+matched proto: "weather5: {"id":234,"lowBattery":true,"temperature":179.3,"humidity":40}"
+matched proto: "weather16: {"id":234,"channel":1,"temperature":179.3,"humidity":164,"lowBattery":true}"
+
 ```
 
-The output is colorized by default. You can disable colors by starting the repl client with the option `--no-color`. 
+The output is colorized by default. You can disable colors by starting 
+ the REPL-Client with the option `--no-color`. 
