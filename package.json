@@ -24,12 +24,20 @@
   },
   "author": "Oliver Schneider <oliverschneider89+sweetpi@gmail.com>",
   "contributors": [
-    "Ronald Steen <ronald.steen@gmail.com>"
+    "Ronald Steen <ronald.steen@gmail.com>",
+    "Marcus Wittig <wittigmarcus@gmail.com>",
+    "Ronny Herzberg <ronny_herzberg@web.de>"
   ],
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/pimatic/homeduinojs/issues"
   },
+  "bundledDependencies": [
+    "bluebird",
+    "otaat-repl",
+    "rfcontroljs",
+    "serialport"
+  ],
   "dependencies": {
     "bluebird": "^3.5.3",
     "otaat-repl": "^1.0.2",
@@ -43,5 +51,11 @@
     "gulp-coffee": "~2.3.3",
     "gulp-plumber": "~1.1.0",
     "gulp-watch": "~4.3.11"
-  }
+  },
+  "keywords": [
+    "pimatic",
+    "homeduino",
+    "home-automation",
+    "433mhz"
+  ]
 }
