@@ -19,6 +19,7 @@ class Board extends events.EventEmitter
 
   constructor: (driver, driverOptions) ->
     assert driver in ["serialport", "gpio"]
+    super()
     # setup a new driver
     switch driver
       when "serialport"
@@ -61,11 +62,11 @@ class Board extends events.EventEmitter
     @stopWatchdog()
     @_watchdogTimeout = setTimeout( (=>
       now = new Date().getTime()
-      # last received data is not very old, conncection looks ok:
+      # last received data is not very old, connection looks ok:
       if now - @_lastDataTime < @timeout
         @setupWatchdog()
         return
-      # Try to send ping, if it failes, there is something wrong...
+      # Try to send ping, if it fails, there is something wrong...
       @driver.write("PING\n").then( =>
         @setupWatchdog()
       ).timeout(20*1000).catch( (err) =>
@@ -175,7 +176,7 @@ class Board extends events.EventEmitter
   readDstAll: (pin) ->
     reading = @writeAndWait("DST #{pin} all\n")
     promise = reading
-      .then( (args) -> 
+      .then( (args) ->
         {
           temperature: parseFloat(args[0])
         })
