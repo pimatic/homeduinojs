@@ -35,8 +35,7 @@
   "bundledDependencies": [
     "bluebird",
     "otaat-repl",
-    "rfcontroljs",
-    "serialport"
+    "rfcontroljs"
   ],
   "dependencies": {
     "bluebird": "^3.5.3",
