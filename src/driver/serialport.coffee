@@ -28,6 +28,7 @@ class SerialPortDriver extends events.EventEmitter
     @serialPort.removeAllListeners('error')
     @serialPort.removeAllListeners('data')
     @serialPort.removeAllListeners('close')
+    @parser.removeAllListeners('data') if @parser?
 
     @serialPort.on('error', (error) => @emit('error', error) )
     @serialPort.on('close', =>
@@ -62,7 +63,7 @@ class SerialPortDriver extends events.EventEmitter
           @serialPort.writeAsync("PING\n").catch(reject)
           @once("ready", resolver)
         )
-      )
+      ).catch(reject)
     ).timeout(timeout).catch( (err) =>
       @removeListener("ready", resolver)
       @serialPort.removeAllListeners('data')
