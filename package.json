@@ -40,7 +40,7 @@
   "dependencies": {
     "bluebird": "^3.5.3",
     "otaat-repl": "^1.0.2",
-    "rfcontroljs": "~0.0.58",
+    "rfcontroljs": "~0.0.59",
     "serialport": "^6.2.2"
   },
   "devDependencies": {
