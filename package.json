@@ -33,6 +33,8 @@
     "url": "https://github.com/pimatic/homeduinojs/issues"
   },
   "bundledDependencies": [
+    "rfcontroljs",
+    "otaat-repl"
   ],
   "dependencies": {
     "bluebird": "^3.5.3",
