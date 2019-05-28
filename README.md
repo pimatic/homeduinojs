@@ -98,15 +98,28 @@ board.pinMode(1, 0).done()
 REPL-Client
 -----------
 
+If a pimatic-homeduino instance is using the board make sure to shutdown pimatic as the board only
+ allows for a single connection.
+ 
 Setup:
 
 ```
 git clone https://github.com/pimatic/homeduinojs && cd homeduinojs && npm install
 ```
 
-Start the REPL-Client:
+Hint: If you want to use the client in a production setup you need to manually install the `colors` 
+ package as shown below.
 
 ```
+cd ~/pimatic-app/node_modules/pimatic-homeduino/node_modules/homeduino/node_modules
+npm i colors
+```
+
+Start the REPL-Client which is located in the lib directory:
+
+```
+# cd ~/pimatic-app/node_modules/pimatic-homeduino/node_modules/homeduino/lib in a production setup
+cd homeduinojs/lib
 sudo ./client.js /dev/ttyUSB0 115200
 ```
 
